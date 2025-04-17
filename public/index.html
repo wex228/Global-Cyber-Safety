@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Global Cyber Safety</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; background: #f8fafc; }
+    form, .message { background: #fff; margin: 10px 0; padding: 15px; border-radius: 10px; }
+    textarea, input, button { width: 100%; margin-top: 10px; padding: 8px; }
+  </style>
+</head>
+<body>
+
+  <h2>Задать вопрос анонимно</h2>
+  <form id="form">
+    <input type="text" name="nickname" placeholder="Ваш ник (необязательно)">
+    <textarea name="message" placeholder="Ваше сообщение" required></textarea>
+    <button type="submit">Отправить</button>
+  </form>
+
+  <div id="messages"></div>
+
+  <script>
+    const form = document.getElementById('form');
+    const msgBox = document.getElementById('messages');
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = {
+        nickname: form.nickname.value,
+        message: form.message.value
+      };
+
+      const res = await fetch('http://localhost:3000/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        loadMessages();
+      } else {
+        alert('Ошибка отправки сообщения');
+      }
+
+      form.reset();
+    });
+
+    async function loadMessages() {
+      const res = await fetch('http://localhost:3000/messages');
+      const msgs = await res.json();
+      msgBox.innerHTML = '';
+      msgs.reverse().forEach(msg => {
+        const div = document.createElement('div');
+        div.className = 'message';
+        div.innerHTML = `<strong>${msg.nickname}</strong><br>${msg.message}<br><small>${new Date(msg.time).toLocaleString()}</small>`;
+        msgBox.appendChild(div);
+      });
+    }
+
+    loadMessages();
+  </script>
+
+</body>
+</html>
